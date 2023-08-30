@@ -1,4 +1,11 @@
+This repository contains the preprocessed files to reproduce the NVIDIA bug #4139266 (https://developer.nvidia.com/nvidia_bug/4139266).
+The problem has been fixed in CUDA 12.2.2.
+
+## Description
+
 Including `<cub/cub.cuh>` and ` <immintrin.h>` breaks compilation with GCC 12, if the SSE2 instruction set is enabled.
+
+## Reproducer
 
 Here is a simple reproducer, `test.cu`:
 ```c++
@@ -31,7 +38,7 @@ fails with
 Killed
 ```
 
----
+## Discussion
 
 This is caused by:
   - the header `.../include/cub/cub.cuh` indirectly includes the header `.../include/cuda/std/detail/__config`
@@ -59,3 +66,18 @@ __global__
 void unused() {}
 ```
 compiles fine.
+
+## Update for CUDA 12.2.2
+
+The problem has been fixed in CUDA 12.2.2:
+```bash
+/usr/local/cuda-12.2/bin/nvcc --version
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2023 NVIDIA Corporation
+Built on Tue_Aug_15_22:02:13_PDT_2023
+Cuda compilation tools, release 12.2, V12.2.140
+Build cuda_12.2.r12.2/compiler.33191640_0
+
+/usr/local/cuda-12.2/bin/nvcc -ccbin g++-12 --compiler-options "-msse2" test.cu -c -o test.o
+```
+builds correctly.
